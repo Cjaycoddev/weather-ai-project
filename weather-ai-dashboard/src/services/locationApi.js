@@ -1,5 +1,6 @@
 import axios from "axios";
 
+// 🌍 CITY SEARCH (WORKING)
 export const getLocation = async (city) => {
   const res = await axios.get(
     "https://geocoding-api.open-meteo.com/v1/search",
@@ -25,27 +26,4 @@ export const getLocation = async (city) => {
     lat: place.latitude,
     lon: place.longitude,
   };
-};
-
-// 🌍 GPS LOCATION (NEW)
-export const getGPSLocation = () => {
-  return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) {
-      reject("Geolocation not supported");
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        resolve({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-        });
-      },
-      (err) => reject(err.message),
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-      }
-    );
-  });
 };

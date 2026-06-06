@@ -1,11 +1,33 @@
+import axios from "axios";
+
+const api = axios.create({
+  baseURL: "https://api.weather-ai.co",
+  headers: {
+    Authorization: `Bearer ${import.meta.env.VITE_WEATHER_AI_KEY}`,
+  },
+});
+
+// 🌍 AUTO WEATHER (IP BASED - WORKING)
 export const getAutoWeather = async () => {
-  const res = await fetch("/.netlify/functions/weather");
-  return await res.json();
+  const res = await api.get("/v1/weather-geo", {
+    params: {
+      ip: "auto",
+      ai: false,
+    },
+  });
+
+  return res.data;
 };
 
+// 🌦️ WEATHER BY COORDS
 export const getWeatherByCoords = async (lat, lon) => {
-  const res = await fetch(
-    `/.netlify/functions/weather-coords?lat=${lat}&lon=${lon}`
-  );
-  return await res.json();
+  const res = await api.get("/v1/weather", {
+    params: {
+      lat,
+      lon,
+      ai: false,
+    },
+  });
+
+  return res.data;
 };
