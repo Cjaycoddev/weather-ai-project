@@ -2,8 +2,6 @@ import axios from "axios";
 
 export const handler = async () => {
   try {
-    // ❌ REMOVED: ip auto (this was causing USA location issue)
-
     const res = await axios.get(
       "https://api.weather-ai.co/v1/weather-geo",
       {
@@ -22,7 +20,7 @@ export const handler = async () => {
       statusCode: 200,
       body: JSON.stringify({
         location: {
-          city: d.location?.city || d.city || "Unknown",
+          city: d.location?.city || "Unknown",
           country: d.location?.country || "",
           lat: d.location?.lat || null,
           lon: d.location?.lon || null,
@@ -53,9 +51,7 @@ export const handler = async () => {
 
           icon: d.current?.icon || "",
 
-          time:
-            d.current?.time ||
-            new Date().toISOString(),
+          time: d.current?.time || new Date().toISOString(),
         },
 
         daily: Array.isArray(d.daily)

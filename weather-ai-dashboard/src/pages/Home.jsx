@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
 import WeatherCard from "../components/WeatherCard";
 import ForecastCard from "../components/ForecastCard";
+import { getGPSLocation } from "../services/locationApi";
 
 import { getLocation } from "../services/locationApi";
 import {
@@ -23,13 +24,26 @@ export default function Home() {
     try {
       setLoading(true);
       setError("");
-
-      const data = await getAutoWeather();
-      setWeather(data);
-
+  
+      const coords = await getGPSLocation();
+  
+      const weatherData = await getWeatherByCoords(
+        coords.lat,
+        coords.lon
+      );
+  
+      setWeather({
+        ...weatherData,
+        location: {
+          ...weatherData.location,
+          lat: coords.lat,
+          lon: coords.lon,
+        },
+      });
+  
     } catch (err) {
       console.error(err);
-      setError("Failed to load weather");
+      setError("Location access denied or failed");
     } finally {
       setLoading(false);
     }
