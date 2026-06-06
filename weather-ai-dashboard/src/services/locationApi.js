@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// 🌍 CITY SEARCH (WORKING)
+// 🌍 CITY SEARCH
 export const getLocation = async (city) => {
   const res = await axios.get(
     "https://geocoding-api.open-meteo.com/v1/search",

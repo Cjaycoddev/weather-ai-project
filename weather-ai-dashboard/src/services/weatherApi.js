@@ -7,7 +7,7 @@ const api = axios.create({
   },
 });
 
-// 🌍 AUTO WEATHER (IP BASED - WORKING)
+// 🌍 AUTO WEATHER (WORKING)
 export const getAutoWeather = async () => {
   const res = await api.get("/v1/weather-geo", {
     params: {
@@ -19,7 +19,7 @@ export const getAutoWeather = async () => {
   return res.data;
 };
 
-// 🌦️ WEATHER BY COORDS
+// 🌦️ COORDINATES WEATHER
 export const getWeatherByCoords = async (lat, lon) => {
   const res = await api.get("/v1/weather", {
     params: {

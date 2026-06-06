@@ -14,7 +14,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 🌍 AUTO LOAD (RESTORED)
+  // 🌍 AUTO LOAD (WORKING)
   useEffect(() => {
     loadAutoWeather();
   }, []);
@@ -34,7 +34,7 @@ export default function Home() {
     }
   };
 
-  // 🔎 SEARCH (RESTORED)
+  // 🔎 SEARCH
   const handleSearch = async (city) => {
     try {
       setLoading(true);
@@ -59,7 +59,7 @@ export default function Home() {
     }
   };
 
-  // 🎨 BACKGROUND (UNCHANGED)
+  // 🎨 BACKGROUND
   const getBackground = () => {
     const code = String(weather?.current?.condition_code ?? "");
 
@@ -89,19 +89,19 @@ export default function Home() {
     }
   };
 
-  // 🌍 SAFE LOCATION FORMAT (NO BREAKING)
+  // 🌍 LOCATION FORMAT (NO "UNKNOWN" — BLANK INSTEAD)
   const formatLocation = (location) => {
     if (!location) return null;
 
-    const city =
-      location.city ||
-      location.name ||
-      location.timezone?.split("/")?.pop()?.replaceAll("_", " ") ||
-      "Unknown";
-
     return {
-      display: city,
+      display:
+        location.city ||
+        location.name ||
+        location.timezone?.split("/")?.pop()?.replaceAll("_", " ") ||
+        "", // ❗ NO "Unknown"
+
       country: location.country || "",
+
       coords: {
         lat: location.lat,
         lon: location.lon,
@@ -112,9 +112,8 @@ export default function Home() {
   const formattedLocation = formatLocation(weather?.location);
 
   return (
-    <div
-      className={`min-h-screen bg-gradient-to-br ${getBackground()} text-white transition-all duration-700`}
-    >
+    <div className={`min-h-screen bg-gradient-to-br ${getBackground()} text-white`}>
+      
       {/* HEADER */}
       <div className="flex flex-col items-center gap-4 pt-6">
         <SearchBar onSearch={handleSearch} />
@@ -141,15 +140,18 @@ export default function Home() {
         </div>
       )}
 
-      {/* LOCATION */}
+      {/* LOCATION DISPLAY (CLEAN) */}
       {formattedLocation && (
         <div className="flex justify-center mt-6">
-          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur border border-white/10">
+          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur border border-white/10 shadow-lg">
 
-            <div className="text-center">
-              📍 {formattedLocation.display}
-              {formattedLocation.country &&
-                `, ${formattedLocation.country}`}
+            <div className="flex items-center gap-2">
+              📍
+              <span>
+                {formattedLocation.display}
+                {formattedLocation.country &&
+                  `, ${formattedLocation.country}`}
+              </span>
             </div>
 
             <div className="text-xs text-gray-300 text-center mt-1">
