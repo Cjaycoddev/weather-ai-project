@@ -18,69 +18,22 @@ export const handler = async (event) => {
       }
     );
 
-    const d = res.data;
+    const data = res.data;
 
     return {
       statusCode: 200,
       body: JSON.stringify({
-        location: {
-          city: d.location?.city || "Unknown",
-          country: d.location?.country || "",
-          lat,
-          lon,
-        },
-
-        current: {
-          temperature:
-            d.current?.temperature ||
-            d.current?.temp ||
-            0,
-
-          condition_code:
-            d.current?.condition_code ||
-            d.current?.weather_code ||
-            "0",
-
-          wind_speed:
-            d.current?.wind_speed ||
-            d.current?.windspeed ||
-            0,
-
-          wind_direction:
-            d.current?.wind_direction ||
-            d.current?.winddir ||
-            0,
-
-          icon: d.current?.icon || "",
-
-          time: d.current?.time || new Date().toISOString(),
-        },
-
-        daily: Array.isArray(d.daily)
-          ? d.daily.map((day, i) => ({
-              date: day.date || day.time || `Day ${i + 1}`,
-
-              temp_min:
-                day.temp_min || day.min_temp || 0,
-
-              temp_max:
-                day.temp_max || day.max_temp || 0,
-
-              precipitation_probability:
-                day.precipitation_probability || 0,
-
-              wind_max:
-                day.wind_max || 0,
-
-              icon: day.icon || "",
-            }))
-          : [],
+        current: data.current || data.current_weather || {},
+        daily: data.daily || data.forecast || [],
+        location: data.location || data.location_info || {},
       }),
     };
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({
+        error: err.message,
+      }),
     };
   }
 };

@@ -13,7 +13,7 @@ export const getLocation = async (city) => {
     }
   );
 
-  if (!res.data.results || res.data.results.length === 0) {
+  if (!res.data.results?.length) {
     throw new Error("City not found");
   }
 
