@@ -2,18 +2,13 @@ import axios from "axios";
 
 export const handler = async (event) => {
   try {
-    const { path, queryStringParameters } = event;
-
     const API_KEY = process.env.VITE_WEATHER_AI_KEY;
 
-    const baseURL = "https://api.weather-ai.co";
-
-    const endpoint = path.replace("/.netlify/functions/weather", "");
-
-    const url = `${baseURL}${endpoint}`;
+    const path = event.path.replace("/.netlify/functions/weather", "");
+    const url = `https://api.weather-ai.co${path}`;
 
     const response = await axios.get(url, {
-      params: queryStringParameters,
+      params: event.queryStringParameters,
       headers: {
         Authorization: `Bearer ${API_KEY}`,
       },
@@ -21,19 +16,17 @@ export const handler = async (event) => {
 
     return {
       statusCode: 200,
-      body: JSON.stringify(response.data),
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Headers": "Content-Type",
       },
+      body: JSON.stringify(response.data),
     };
-  } catch (error) {
-    console.error(error);
 
+  } catch (error) {
     return {
       statusCode: 500,
       body: JSON.stringify({
-        error: "Serverless function failed",
+        error: error.message,
       }),
     };
   }
