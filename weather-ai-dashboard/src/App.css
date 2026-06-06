@@ -1,0 +1,193 @@
+/* 🌍 BASE LAYOUT */
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: radial-gradient(circle at top, #1e293b, #0f172a);
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 📦 MAIN CONTAINER */
+.container {
+  max-width: 1000px;
+  margin: auto;
+  padding: 24px;
+}
+
+/* 🪟 GLASS CARD */
+.card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-radius: 18px;
+  padding: 20px;
+  margin-top: 20px;
+
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  transition: all 0.3s ease;
+}
+
+/* ✨ CARD HOVER */
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.45);
+}
+
+/* 🏷️ TITLE */
+.title {
+  text-align: center;
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+
+  background: linear-gradient(
+    90deg,
+    #ffffff,
+    #93c5fd,
+    #60a5fa
+  );
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 📝 SUBTITLE */
+.subtitle {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 24px;
+  font-size: 15px;
+}
+
+/* 🔎 INPUTS */
+input {
+  outline: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.06);
+  color: white;
+  padding: 10px 14px;
+  border-radius: 10px;
+  transition: 0.2s ease;
+}
+
+input:focus {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+/* 🔘 BUTTONS */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 500;
+
+  background: linear-gradient(
+    135deg,
+    #3b82f6,
+    #2563eb
+  );
+
+  color: white;
+
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  opacity: 0.95;
+}
+
+/* 📱 MOBILE */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 32px;
+  }
+
+  .card {
+    padding: 16px;
+  }
+}
+
+/* 🌫️ PAGE FADE */
+.fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* 🌤️ FORECAST CARD ANIMATION */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform:
+      translateY(25px)
+      scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+/* REQUIRED FOR 3D */
+.perspective {
+  perspective: 1200px;
+}
+
+/* OUTER CARD */
+.flip-card {
+  position: relative;
+}
+
+/* INNER FLIP */
+.flip-inner {
+  position: relative;
+  transform-style: preserve-3d;
+  animation: flipIn 0.8s ease forwards;
+}
+
+/* FRONT SIDE */
+.flip-front,
+.flip-back {
+  position: absolute;
+  width: 100%;
+  backface-visibility: hidden;
+}
+
+/* BACK SIDE */
+.flip-back {
+  transform: rotateY(180deg);
+}
+
+/* THE ACTUAL FLIP ANIMATION */
+@keyframes flipIn {
+  0% {
+    opacity: 0;
+    transform: rotateY(180deg) scale(0.8);
+  }
+
+  100% {
+    opacity: 1;
+    transform: rotateY(0deg) scale(1);
+  }
+}
