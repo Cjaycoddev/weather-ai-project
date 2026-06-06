@@ -2,7 +2,7 @@ import axios from "axios";
 
 export const handler = async () => {
   try {
-    const response = await axios.get(
+    const res = await axios.get(
       "https://api.weather-ai.co/v1/weather-geo",
       {
         params: {
@@ -15,17 +15,22 @@ export const handler = async () => {
       }
     );
 
+    const data = res.data;
+
     return {
       statusCode: 200,
-      headers: {
-        "Access-Control-Allow-Origin": "*",
-      },
-      body: JSON.stringify(response.data),
+      body: JSON.stringify({
+        current: data.current || data.current_weather || {},
+        daily: data.daily || data.forecast || [],
+        location: data.location || data.location_info || {},
+      }),
     };
-  } catch (error) {
+  } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message }),
+      body: JSON.stringify({
+        error: err.message,
+      }),
     };
   }
 };

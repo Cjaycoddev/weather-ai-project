@@ -1,16 +1,15 @@
 import axios from "axios";
 
-// 🌍 AUTO (user location)
+// 🌍 AUTO WEATHER (Netlify Function)
 export const getAutoWeather = async () => {
-  const res = await axios.get("/.netlify/functions/weather");
-  return res.data;
+  const res = await fetch("/.netlify/functions/weather");
+  return await res.json();
 };
 
-// 🌦️ WEATHER BY COORDINATES
+// 🌦️ WEATHER BY COORDINATES (Netlify Function)
 export const getWeatherByCoords = async (lat, lon) => {
-  const res = await axios.get("/.netlify/functions/weather-coords", {
-    params: { lat, lon },
-  });
-
-  return res.data;
+  const res = await fetch(
+    `/.netlify/functions/weather-coords?lat=${lat}&lon=${lon}`
+  );
+  return await res.json();
 };
