@@ -86,21 +86,51 @@ export default function Home() {
     }
   };
 
-  // ✅ FIXED LOCATION (NO "UNKNOWN", NO BREAKING UI)
+  // 🌍 FLAG FUNCTION (RESTORED)
+  const getFlagUrl = (country) => {
+    if (!country) return "";
+
+    const code = String(country).toLowerCase();
+
+    const map = {
+      kenya: "ke",
+      uganda: "ug",
+      tanzania: "tz",
+      "united states": "us",
+      usa: "us",
+      "united kingdom": "gb",
+      germany: "de",
+      france: "fr",
+      canada: "ca",
+      india: "in",
+    };
+
+    const iso = code.length === 2 ? code : map[code];
+
+    if (!iso) return "";
+
+    return `https://flagcdn.com/w40/${iso}.png`;
+  };
+
+  // 📍 FIXED LOCATION FORMAT
   const formatLocation = (location) => {
     if (!location) return null;
 
+    const city =
+      location.city ||
+      location.name ||
+      location.town ||
+      location.village ||
+      location.timezone?.split("/")?.pop()?.replaceAll("_", " ") ||
+      "";
+
     return {
-      display:
-        location.city ||
-        location.name ||
-        location.town ||
-        location.village ||
-        "",
+      display: city,
       country: location.country || "",
+      flagUrl: getFlagUrl(location.country),
       coords: {
-        lat: location.lat,
-        lon: location.lon,
+        latitude: location.lat,
+        longitude: location.lon,
       },
     };
   };
@@ -135,12 +165,20 @@ export default function Home() {
 
       {formattedLocation && (
         <div className="flex justify-center mt-6">
-          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur">
-            📍 {formattedLocation.display}, {formattedLocation.country}
-            <div className="text-xs text-gray-300">
-              Lat: {formattedLocation.coords.lat?.toFixed(2)} |
-              Lon: {formattedLocation.coords.lon?.toFixed(2)}
-            </div>
+          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur flex items-center gap-2">
+
+            {formattedLocation.flagUrl && (
+              <img
+                src={formattedLocation.flagUrl}
+                alt="flag"
+                className="w-6 h-4 rounded-sm shadow"
+              />
+            )}
+
+            <span>
+              📍 {formattedLocation.display}, {formattedLocation.country}
+            </span>
+
           </div>
         </div>
       )}

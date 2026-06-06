@@ -42,85 +42,233 @@
 
 
 
+/* ========================= */
+/* WEATHER ANIMATIONS */
+/* ========================= */
+
 /* ☀️ SUN */
+
 .sun-core {
-  width: 60px;
-  height: 60px;
-  background: radial-gradient(circle, #ffd700, #ffb300);
+  width: 70px;
+  height: 70px;
   border-radius: 50%;
-  animation: pulseSun 2s infinite ease-in-out;
-  box-shadow: 0 0 30px rgba(255, 200, 0, 0.8);
+
+  background: radial-gradient(
+    circle,
+    #ffe066 0%,
+    #ffcc00 60%,
+    #ffb700 100%
+  );
+
+  box-shadow:
+    0 0 30px #ffcc00,
+    0 0 60px #ffcc00;
+
+  animation: sunPulse 3s ease-in-out infinite;
 }
 
 .sun-rays {
   position: absolute;
-  width: 90px;
-  height: 90px;
+
+  width: 120px;
+  height: 120px;
+
   border-radius: 50%;
-  border: 2px solid rgba(255, 200, 0, 0.5);
-  animation: rotate 6s linear infinite;
+
+  border: 4px dashed rgba(255, 215, 0, 0.7);
+
+  animation: sunRotate 12s linear infinite;
 }
 
-@keyframes pulseSun {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+@keyframes sunPulse {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.12);
+  }
+
+  100% {
+    transform: scale(1);
+  }
 }
 
-@keyframes rotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes sunRotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ☁️ CLOUD */
+
+.cloud-float {
+  animation: cloudFloat 4s ease-in-out infinite;
+}
+
+@keyframes cloudFloat {
+  0% {
+    transform: translateY(0px);
+  }
+
+  50% {
+    transform: translateY(-12px);
+  }
+
+  100% {
+    transform: translateY(0px);
+  }
 }
 
 /* 🌧 RAIN */
+
+.rain {
+  position: absolute;
+  top: 70px;
+
+  display: flex;
+  gap: 8px;
+}
+
 .rain span {
-  width: 4px;
-  height: 12px;
+  width: 3px;
+  height: 16px;
+
+  border-radius: 20px;
+
   background: #60a5fa;
-  display: inline-block;
-  margin: 2px;
-  animation: rainDrop 0.6s infinite linear;
+
+  animation: rainFall .8s linear infinite;
 }
 
-.rain span:nth-child(2) { animation-delay: 0.2s; }
-.rain span:nth-child(3) { animation-delay: 0.4s; }
-
-@keyframes rainDrop {
-  0% { transform: translateY(-10px); opacity: 0; }
-  50% { opacity: 1; }
-  100% { transform: translateY(10px); opacity: 0; }
+.rain span:nth-child(2) {
+  animation-delay: .2s;
 }
 
-/* ☁️ CLOUD FLOAT */
-.cloud-float {
-  animation: float 3s ease-in-out infinite;
+.rain span:nth-child(3) {
+  animation-delay: .4s;
 }
 
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+@keyframes rainFall {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
 }
 
-/* ⛈ STORM FLASH */
+/* 🌩 LIGHTNING */
+
 .lightning {
   position: absolute;
-  width: 2px;
-  height: 30px;
+
+  width: 4px;
+  height: 45px;
+
   background: yellow;
-  animation: flash 1s infinite;
+
+  top: 60px;
+
+  box-shadow:
+    0 0 10px yellow,
+    0 0 20px yellow;
+
+  animation: lightningFlash 1s infinite;
 }
 
-@keyframes flash {
-  0%, 100% { opacity: 0; }
-  50% { opacity: 1; }
+@keyframes lightningFlash {
+  0% {
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  20% {
+    opacity: 0;
+  }
+
+  30% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
 }
 
 /* 🌫 FOG */
+
 .fog {
-  animation: fogMove 4s ease-in-out infinite;
-  opacity: 0.6;
+  opacity: 0.7;
+
+  animation: fogDrift 5s ease-in-out infinite;
 }
 
-@keyframes fogMove {
-  0%, 100% { transform: translateX(0); }
-  50% { transform: translateX(5px); }
+@keyframes fogDrift {
+  0% {
+    transform: translateX(-5px);
+  }
+
+  50% {
+    transform: translateX(10px);
+  }
+
+  100% {
+    transform: translateX(-5px);
+  }
+}
+
+/* ❄️ SNOW */
+
+.snow {
+  position: absolute;
+  top: 70px;
+
+  display: flex;
+  gap: 8px;
+}
+
+.snow span {
+  color: white;
+  font-size: 16px;
+
+  animation: snowFall 2s linear infinite;
+}
+
+.snow span:nth-child(2) {
+  animation-delay: .5s;
+}
+
+.snow span:nth-child(3) {
+  animation-delay: 1s;
+}
+
+@keyframes snowFall {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(25px);
+  }
 }
