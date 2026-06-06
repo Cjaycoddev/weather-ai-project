@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// 🌍 CITY SEARCH
 export const getLocation = async (city) => {
   const res = await axios.get(
     "https://geocoding-api.open-meteo.com/v1/search",
@@ -28,7 +27,7 @@ export const getLocation = async (city) => {
   };
 };
 
-// 🌍 GPS LOCATION
+// 🌍 GPS LOCATION (NEW)
 export const getGPSLocation = () => {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) {
@@ -49,24 +48,4 @@ export const getGPSLocation = () => {
       }
     );
   });
-};
-
-// 🌍 REVERSE GEOCODING (FIX UNKNOWN ISSUE)
-export const getCityFromCoords = async (lat, lon) => {
-  const res = await axios.get(
-    "https://geocoding-api.open-meteo.com/v1/reverse",
-    {
-      params: {
-        latitude: lat,
-        longitude: lon,
-      },
-    }
-  );
-
-  const data = res.data;
-
-  return {
-    city: data?.name || "Unknown",
-    country: data?.country || "",
-  };
 };

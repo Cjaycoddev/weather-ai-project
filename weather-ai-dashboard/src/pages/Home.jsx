@@ -2,13 +2,10 @@ import { useEffect, useState } from "react";
 import SearchBar from "../components/SearchBar";
 import WeatherCard from "../components/WeatherCard";
 import ForecastCard from "../components/ForecastCard";
+import { getGPSLocation } from "../services/locationApi";
+import { getGPSLocation, getCityFromCoords } from "../services/locationApi";
 
-import {
-  getGPSLocation,
-  getCityFromCoords,
-  getLocation,
-} from "../services/locationApi";
-
+import { getLocation } from "../services/locationApi";
 import {
   getAutoWeather,
   getWeatherByCoords,
@@ -19,28 +16,24 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 🌍 GPS LOAD (MY LOCATION BUTTON)
+  // 🌍 AUTO LOAD
   const loadAutoWeather = async () => {
     try {
       setLoading(true);
       setError("");
-
-      // 1. Get GPS coordinates
+  
       const coords = await getGPSLocation();
-
-      // 2. Get weather from coordinates
+  
       const weatherData = await getWeatherByCoords(
         coords.lat,
         coords.lon
       );
-
-      // 3. Convert coordinates → city name
+  
       const place = await getCityFromCoords(
         coords.lat,
         coords.lon
       );
-
-      // 4. Merge everything into final state
+  
       setWeather({
         ...weatherData,
         location: {
@@ -50,6 +43,7 @@ export default function Home() {
           lon: coords.lon,
         },
       });
+  
     } catch (err) {
       console.error(err);
       setError("Location access failed");
@@ -58,7 +52,7 @@ export default function Home() {
     }
   };
 
-  // 🔎 CITY SEARCH
+  // 🔎 SEARCH
   const handleSearch = async (city) => {
     try {
       setLoading(true);
@@ -80,6 +74,7 @@ export default function Home() {
         ...weatherData,
         location,
       });
+
     } catch (err) {
       console.error(err);
       setError("Unable to fetch weather data");
@@ -88,20 +83,23 @@ export default function Home() {
     }
   };
 
-  // 🎨 BACKGROUND BASED ON WEATHER CODE
+  // 🎨 BACKGROUND CONTROL (FIXED)
   const getBackground = () => {
     const code = String(weather?.current?.condition_code ?? "");
 
     switch (code) {
       case "0":
         return "from-yellow-400 via-orange-500 to-pink-600";
+
       case "1":
       case "2":
       case "3":
         return "from-sky-400 via-blue-500 to-indigo-700";
+
       case "45":
       case "48":
         return "from-slate-500 via-slate-700 to-slate-900";
+
       case "51":
       case "53":
       case "55":
@@ -109,21 +107,24 @@ export default function Home() {
       case "63":
       case "65":
         return "from-blue-500 via-blue-700 to-slate-900";
+
       case "95":
       case "96":
       case "99":
         return "from-purple-700 via-slate-900 to-black";
+
       default:
         return "from-cyan-500 via-blue-600 to-indigo-900";
     }
   };
 
-  // 🌍 FLAG SYSTEM
+  // 🌍 FLAG URL (REAL PNG FLAGS)
   const getFlagUrl = (country) => {
     if (!country) return "";
-
+  
     const value = String(country).trim().toLowerCase();
-
+  
+    // 🌍 small fallback aliases for messy API outputs
     const aliases = {
       "united states": "us",
       usa: "us",
@@ -131,24 +132,33 @@ export default function Home() {
       uk: "gb",
       england: "gb",
     };
-
+  
     let iso = "";
-
+  
+    // CASE 1: already ISO2 (KE, US, TZ, etc.)
     if (value.length === 2) {
       iso = value;
-    } else if (aliases[value]) {
-      iso = aliases[value];
-    } else {
-      const parts = value.split(" ");
-      iso =
-        parts.length >= 2
-          ? parts[0][0] + parts[1][0]
-          : value.slice(0, 2);
     }
-
+  
+    // CASE 2: known aliases
+    else if (aliases[value]) {
+      iso = aliases[value];
+    }
+  
+    // CASE 3: smart fallback using first letters (better than nothing)
+    else {
+      // try to extract first 2 letters of words (more stable than slice)
+      const parts = value.split(" ");
+      if (parts.length >= 2) {
+        iso = (parts[0][0] + parts[1][0]);
+      } else {
+        iso = value.slice(0, 2);
+      }
+    }
+  
     return `https://flagcdn.com/w40/${iso}.png`;
   };
-
+  
   const countryNameMap = {
     KE: "Kenya",
     US: "United States",
@@ -160,8 +170,7 @@ export default function Home() {
     CA: "Canada",
     IN: "India",
   };
-
-  // 📍 FORMAT LOCATION DISPLAY
+  // 📍 LOCATION FORMAT
   const formatLocation = (location) => {
     if (!location) return null;
 
@@ -176,11 +185,9 @@ export default function Home() {
     return {
       display: city,
       country:
-        countryNameMap[
-          String(location.country || "").toUpperCase()
-        ] ||
-        location.country ||
-        "",
+      countryNameMap[String(location.country).toUpperCase()] ||
+      location.country ||
+      "",
       flagUrl: getFlagUrl(location.country),
       coords: {
         lat: location.lat,
@@ -195,13 +202,19 @@ export default function Home() {
     <div
       className={`min-h-screen bg-gradient-to-br ${getBackground()} text-white transition-all duration-700`}
     >
+
       {/* HEADER */}
       <div className="flex flex-col items-center gap-4 pt-6">
         <SearchBar onSearch={handleSearch} />
 
         <button
           onClick={loadAutoWeather}
-          className="bg-white/10 hover:bg-white/20 px-5 py-2 rounded-xl backdrop-blur transition text-sm"
+          className="
+            bg-white/10 hover:bg-white/20
+            px-5 py-2 rounded-xl
+            backdrop-blur
+            transition text-sm
+          "
         >
           📍 My Location
         </button>
@@ -224,50 +237,75 @@ export default function Home() {
       {/* LOCATION DISPLAY */}
       {formattedLocation && (
         <div className="flex justify-center mt-6">
-          <div className="flex flex-col items-center gap-1 px-5 py-3 rounded-full bg-white/10 backdrop-blur border border-white/10 shadow-lg">
+
+          <div className="
+            flex flex-col items-center gap-1
+            px-5 py-3 rounded-full
+            bg-white/10 backdrop-blur
+            border border-white/10
+            shadow-lg animate-fade-in
+          ">
+
+            {/* TOP ROW */}
             <div className="flex items-center gap-2">
+
+              {/* LIVE DOT */}
               <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative h-3 w-3 rounded-full bg-green-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
               </span>
 
-              {formattedLocation.flagUrl && (
-                <img
-                  src={formattedLocation.flagUrl}
-                  alt="flag"
-                  className="w-6 h-4 rounded-sm shadow"
-                />
-              )}
+              {/* FLAG + TEXT */}
+              <div className="flex items-center gap-2">
 
-              <span className="text-sm font-medium">
-                📍 {formattedLocation.display},{" "}
-                {formattedLocation.country}
-              </span>
+                {formattedLocation.flagUrl && (
+                  <img
+                    src={formattedLocation.flagUrl}
+                    alt="flag"
+                    className="w-6 h-4 rounded-sm shadow"
+                  />
+                )}
+
+                <span className="text-sm text-black-200 font-medium">
+                  📍 {formattedLocation.display}, {formattedLocation.country}
+                </span>
+
+              </div>
             </div>
 
-            <span className="text-xs text-gray-300">
+            {/* COORDINATES */}
+            <span className="text-xs text-black-400">
               Latitude: {formattedLocation.coords.lat?.toFixed(2)} |
               Longitude: {formattedLocation.coords.lon?.toFixed(2)}
             </span>
+
           </div>
         </div>
       )}
 
-      {/* WEATHER */}
+      {/* WEATHER COMPONENTS */}
       {weather && (
-        <div className="space-y-6 mt-6">
+        <div className="space-y-6 mt-6 animate-fade-in">
+
           <WeatherCard current={weather.current} />
-          <ForecastCard daily={weather.daily} />
+
+          <ForecastCard
+            key={weather?.current?.time + weather?.location?.timezone}
+            daily={weather.daily}
+          />
+
         </div>
       )}
 
       {/* FOOTER */}
-      <div className="mt-16 text-center pb-6 text-sm text-gray-300">
+      <div className="mt-16 text-center pb-6 text-black400 text-sm">
         Weather AI Dashboard <br />
-        <span className="text-xs">
-          Built by Jonah Kimani © 2026
+        <span className="text-xs text-black-500">
+          Built by Jonah Kimani<br/>
+          Copyright@2026
         </span>
       </div>
+
     </div>
   );
 }

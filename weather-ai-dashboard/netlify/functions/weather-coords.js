@@ -7,7 +7,11 @@ export const handler = async (event) => {
     const res = await axios.get(
       "https://api.weather-ai.co/v1/weather",
       {
-        params: { lat, lon, ai: false },
+        params: {
+          lat,
+          lon,
+          ai: false,
+        },
         headers: {
           Authorization: `Bearer ${process.env.VITE_WEATHER_AI_KEY}`,
         },
@@ -20,6 +24,8 @@ export const handler = async (event) => {
       statusCode: 200,
       body: JSON.stringify({
         location: {
+          city: d.location?.city || "Unknown",
+          country: d.location?.country || "",
           lat,
           lon,
         },
@@ -46,16 +52,26 @@ export const handler = async (event) => {
             0,
 
           icon: d.current?.icon || "",
+
           time: d.current?.time || new Date().toISOString(),
         },
 
         daily: Array.isArray(d.daily)
           ? d.daily.map((day, i) => ({
               date: day.date || day.time || `Day ${i + 1}`,
-              temp_min: day.temp_min || 0,
-              temp_max: day.temp_max || 0,
-              precipitation_probability: day.precipitation_probability || 0,
-              wind_max: day.wind_max || 0,
+
+              temp_min:
+                day.temp_min || day.min_temp || 0,
+
+              temp_max:
+                day.temp_max || day.max_temp || 0,
+
+              precipitation_probability:
+                day.precipitation_probability || 0,
+
+              wind_max:
+                day.wind_max || 0,
+
               icon: day.icon || "",
             }))
           : [],
