@@ -1,6 +1,5 @@
 import axios from "axios";
 
-// 🌍 CITY SEARCH
 export const getLocation = async (city) => {
   const res = await axios.get(
     "https://geocoding-api.open-meteo.com/v1/search",
@@ -14,7 +13,7 @@ export const getLocation = async (city) => {
     }
   );
 
-  if (!res.data.results?.length) {
+  if (!res.data.results || res.data.results.length === 0) {
     throw new Error("City not found");
   }
 

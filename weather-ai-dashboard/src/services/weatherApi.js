@@ -1,13 +1,15 @@
 import axios from "axios";
 
+const API_KEY = import.meta.env.VITE_WEATHER_AI_KEY;
+
 const api = axios.create({
   baseURL: "https://api.weather-ai.co",
   headers: {
-    Authorization: `Bearer ${import.meta.env.VITE_WEATHER_AI_KEY}`,
+    Authorization: `Bearer ${API_KEY}`,
   },
 });
 
-// 🌍 AUTO WEATHER (WORKING)
+// 🌍 AUTO WEATHER (IP BASED)
 export const getAutoWeather = async () => {
   const res = await api.get("/v1/weather-geo", {
     params: {
@@ -19,7 +21,7 @@ export const getAutoWeather = async () => {
   return res.data;
 };
 
-// 🌦️ COORDINATES WEATHER
+// 🌦️ WEATHER BY COORDINATES
 export const getWeatherByCoords = async (lat, lon) => {
   const res = await api.get("/v1/weather", {
     params: {

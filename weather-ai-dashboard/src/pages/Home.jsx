@@ -14,7 +14,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 🌍 AUTO LOAD (WORKING)
+  // 🌍 AUTO LOAD (ORIGINAL)
   useEffect(() => {
     loadAutoWeather();
   }, []);
@@ -34,7 +34,7 @@ export default function Home() {
     }
   };
 
-  // 🔎 SEARCH
+  // 🔎 SEARCH (ORIGINAL)
   const handleSearch = async (city) => {
     try {
       setLoading(true);
@@ -59,7 +59,7 @@ export default function Home() {
     }
   };
 
-  // 🎨 BACKGROUND
+  // 🎨 BACKGROUND (ORIGINAL)
   const getBackground = () => {
     const code = String(weather?.current?.condition_code ?? "");
 
@@ -89,19 +89,21 @@ export default function Home() {
     }
   };
 
-  // 🌍 LOCATION FORMAT (NO "UNKNOWN" — BLANK INSTEAD)
+  // 🌍 LOCATION (ORIGINAL BEHAVIOR — MAY SHOW UNKNOWN)
   const formatLocation = (location) => {
     if (!location) return null;
 
+    const city =
+      location.city ||
+      location.name ||
+      location.town ||
+      location.village ||
+      location.timezone?.split("/")?.pop()?.replaceAll("_", " ") ||
+      "Unknown";
+
     return {
-      display:
-        location.city ||
-        location.name ||
-        location.timezone?.split("/")?.pop()?.replaceAll("_", " ") ||
-        "", // ❗ NO "Unknown"
-
+      display: city,
       country: location.country || "",
-
       coords: {
         lat: location.lat,
         lon: location.lon,
@@ -140,21 +142,18 @@ export default function Home() {
         </div>
       )}
 
-      {/* LOCATION DISPLAY (CLEAN) */}
+      {/* LOCATION */}
       {formattedLocation && (
         <div className="flex justify-center mt-6">
-          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur border border-white/10 shadow-lg">
+          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur">
 
-            <div className="flex items-center gap-2">
-              📍
-              <span>
-                {formattedLocation.display}
-                {formattedLocation.country &&
-                  `, ${formattedLocation.country}`}
-              </span>
+            <div>
+              📍 {formattedLocation.display}
+              {formattedLocation.country &&
+                `, ${formattedLocation.country}`}
             </div>
 
-            <div className="text-xs text-gray-300 text-center mt-1">
+            <div className="text-xs text-gray-300">
               Lat: {formattedLocation.coords.lat?.toFixed(2)} |
               Lon: {formattedLocation.coords.lon?.toFixed(2)}
             </div>
