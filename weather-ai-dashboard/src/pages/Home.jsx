@@ -13,6 +13,7 @@ export default function Home() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [coords, setCoords] = useState(null);
 
   useEffect(() => {
     loadAutoWeather();
@@ -23,36 +24,41 @@ export default function Home() {
       setLoading(true);
       setError("");
 
-      // 🌍 DEVICE GPS FIRST
+      // 🌍 REAL DEVICE GPS (PRIMARY SOURCE)
       const getPosition = () =>
         new Promise((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject);
         });
 
-      let lat, lon;
-
       try {
         const pos = await getPosition();
-        lat = pos.coords.latitude;
-        lon = pos.coords.longitude;
-      } catch (gpsError) {
-        console.warn("GPS blocked, falling back to IP location");
-        const data = await getAutoWeather();
-        setWeather(data);
+
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+
+        setCoords({ lat, lon });
+
+        const weatherData = await getWeatherByCoords(lat, lon);
+
+        setWeather({
+          ...weatherData,
+          location: {
+            ...weatherData.location,
+            lat,
+            lon,
+            source: "gps",
+          },
+        });
+
         return;
+      } catch (gpsError) {
+        console.warn("GPS denied → fallback to IP location");
       }
 
-      const weatherData = await getWeatherByCoords(lat, lon);
+      // 🌐 FALLBACK (IP BASED)
+      const data = await getAutoWeather();
 
-      setWeather({
-        ...weatherData,
-        location: {
-          ...weatherData.location,
-          lat,
-          lon,
-          source: "gps",
-        },
-      });
+      setWeather(data);
 
     } catch (err) {
       console.error(err);
@@ -74,10 +80,16 @@ export default function Home() {
         location.lon
       );
 
+      setCoords({
+        lat: location.lat,
+        lon: location.lon,
+      });
+
       setWeather({
         ...weatherData,
         location,
       });
+
     } catch (err) {
       console.error(err);
       setError("Unable to fetch weather data");
@@ -115,7 +127,7 @@ export default function Home() {
     }
   };
 
-  // 🌍 FLAG FUNCTION
+  // 🌍 FLAG FUNCTION (UNCHANGED)
   const getFlagUrl = (country) => {
     if (!country) return "";
 
@@ -141,7 +153,6 @@ export default function Home() {
     return `https://flagcdn.com/w40/${iso}.png`;
   };
 
-  // 📍 LOCATION FORMAT (FIXED SAFE KEYS)
   const formatLocation = (location) => {
     if (!location) return null;
 
@@ -169,6 +180,7 @@ export default function Home() {
   return (
     <div className={`min-h-screen bg-gradient-to-br ${getBackground()} text-white`}>
       
+      {/* HEADER */}
       <div className="flex flex-col items-center gap-4 pt-6">
         <SearchBar onSearch={handleSearch} />
 
@@ -180,38 +192,63 @@ export default function Home() {
         </button>
       </div>
 
+      {/* LOADING */}
       {loading && (
-        <div className="text-center mt-6 text-blue-300">
+        <div className="text-center mt-6 text-blue-300 animate-pulse">
           Loading weather...
         </div>
       )}
 
+      {/* ERROR */}
       {error && (
         <div className="text-center mt-6 text-red-400">
           {error}
         </div>
       )}
 
+      {/* LOCATION DISPLAY + GREEN DOT + COORDS */}
       {formattedLocation && (
         <div className="flex justify-center mt-6">
-          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur flex items-center gap-2">
+          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur flex flex-col items-center gap-2">
 
-            {formattedLocation.flagUrl && (
-              <img
-                src={formattedLocation.flagUrl}
-                alt="flag"
-                className="w-6 h-4 rounded-sm shadow"
-              />
-            )}
+            {/* LIVE DOT */}
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-60"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+              </span>
 
-            <span>
-              📍 {formattedLocation.display}, {formattedLocation.country}
-            </span>
+              <span className="text-green-300 text-xs">
+                LIVE LOCATION
+              </span>
+            </div>
+
+            {/* FLAG + TEXT */}
+            <div className="flex items-center gap-2">
+              {formattedLocation.flagUrl && (
+                <img
+                  src={formattedLocation.flagUrl}
+                  alt="flag"
+                  className="w-6 h-4 rounded-sm shadow"
+                />
+              )}
+
+              <span>
+                📍 {formattedLocation.display}, {formattedLocation.country}
+              </span>
+            </div>
+
+            {/* FULL COORDINATES (FIXED) */}
+            <div className="text-xs text-black">
+              Latitude: {formattedLocation.coords.lat?.toFixed(6)} <br />
+              Longitude: {formattedLocation.coords.lon?.toFixed(6)}
+            </div>
 
           </div>
         </div>
       )}
 
+      {/* WEATHER */}
       {weather && (
         <div className="space-y-6 mt-6">
           <WeatherCard current={weather.current} />
@@ -219,6 +256,7 @@ export default function Home() {
         </div>
       )}
 
+      {/* FOOTER */}
       <div className="mt-16 text-center pb-6 text-sm text-gray-300">
         Weather AI Dashboard <br />
         Built by Jonah Kimani © 2026
