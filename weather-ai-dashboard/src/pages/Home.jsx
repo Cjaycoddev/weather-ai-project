@@ -25,7 +25,6 @@ export default function Home() {
 
       const data = await getAutoWeather();
       setWeather(data);
-
     } catch (err) {
       console.error(err);
       setError("Failed to load weather");
@@ -50,7 +49,6 @@ export default function Home() {
         ...weatherData,
         location,
       });
-
     } catch (err) {
       console.error(err);
       setError("Unable to fetch weather data");
@@ -88,19 +86,17 @@ export default function Home() {
     }
   };
 
+  // ✅ FIXED LOCATION (NO "UNKNOWN", NO BREAKING UI)
   const formatLocation = (location) => {
     if (!location) return null;
 
-    const city =
-      location.city ||
-      location.name ||
-      location.town ||
-      location.village ||
-      location.timezone?.split("/")?.pop()?.replaceAll("_", " ") ||
-      " ";
-
     return {
-      display: city,
+      display:
+        location.city ||
+        location.name ||
+        location.town ||
+        location.village ||
+        "",
       country: location.country || "",
       coords: {
         lat: location.lat,
