@@ -14,7 +14,6 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // 🌍 AUTO LOAD
   useEffect(() => {
     loadAutoWeather();
   }, []);
@@ -35,18 +34,12 @@ export default function Home() {
     }
   };
 
-  // 🔎 SEARCH
   const handleSearch = async (city) => {
     try {
       setLoading(true);
       setError("");
 
       const location = await getLocation(city);
-
-      if (!location) {
-        setError("City not found");
-        return;
-      }
 
       const weatherData = await getWeatherByCoords(
         location.lat,
@@ -66,7 +59,6 @@ export default function Home() {
     }
   };
 
-  // 🎨 BACKGROUND CONTROL
   const getBackground = () => {
     const code = String(weather?.current?.condition_code ?? "");
 
@@ -96,7 +88,6 @@ export default function Home() {
     }
   };
 
-  // 🌍 LOCATION DISPLAY (NO CUSTOM FIXES YET)
   const formatLocation = (location) => {
     if (!location) return null;
 
@@ -106,12 +97,11 @@ export default function Home() {
       location.town ||
       location.village ||
       location.timezone?.split("/")?.pop()?.replaceAll("_", " ") ||
-      "";
+      " ";
 
     return {
       display: city,
-      country:
-        location.country || "",
+      country: location.country || "",
       coords: {
         lat: location.lat,
         lon: location.lon,
@@ -122,89 +112,54 @@ export default function Home() {
   const formattedLocation = formatLocation(weather?.location);
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br ${getBackground()} text-white transition-all duration-700`}>
+    <div className={`min-h-screen bg-gradient-to-br ${getBackground()} text-white`}>
       
-      {/* HEADER */}
       <div className="flex flex-col items-center gap-4 pt-6">
         <SearchBar onSearch={handleSearch} />
 
         <button
           onClick={loadAutoWeather}
-          className="
-            bg-white/10 hover:bg-white/20
-            px-5 py-2 rounded-xl
-            backdrop-blur
-            transition text-sm
-          "
+          className="bg-white/10 hover:bg-white/20 px-5 py-2 rounded-xl backdrop-blur text-sm"
         >
           📍 My Location
         </button>
       </div>
 
-      {/* LOADING */}
       {loading && (
-        <div className="text-center mt-6 text-blue-300 animate-pulse">
+        <div className="text-center mt-6 text-blue-300">
           Loading weather...
         </div>
       )}
 
-      {/* ERROR */}
       {error && (
         <div className="text-center mt-6 text-red-400">
           {error}
         </div>
       )}
 
-      {/* LOCATION DISPLAY */}
       {formattedLocation && (
         <div className="flex justify-center mt-6">
-
-          <div className="
-            flex flex-col items-center gap-1
-            px-5 py-3 rounded-full
-            bg-white/10 backdrop-blur
-            border border-white/10
-            shadow-lg animate-fade-in
-          ">
-
-            <div className="flex items-center gap-2">
-              <span className="text-green-400">📍</span>
-
-              <span className="text-sm font-medium">
-                📍 {formattedLocation.display}, {formattedLocation.country}
-              </span>
+          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur">
+            📍 {formattedLocation.display}, {formattedLocation.country}
+            <div className="text-xs text-gray-300">
+              Lat: {formattedLocation.coords.lat?.toFixed(2)} |
+              Lon: {formattedLocation.coords.lon?.toFixed(2)}
             </div>
-
-            <span className="text-xs text-gray-300">
-              Latitude: {formattedLocation.coords.lat?.toFixed(2)} |
-              Longitude: {formattedLocation.coords.lon?.toFixed(2)}
-            </span>
-
           </div>
         </div>
       )}
 
-      {/* WEATHER COMPONENTS */}
       {weather && (
-        <div className="space-y-6 mt-6 animate-fade-in">
-
+        <div className="space-y-6 mt-6">
           <WeatherCard current={weather.current} />
-
-          <ForecastCard
-            daily={weather.daily}
-          />
-
+          <ForecastCard daily={weather.daily} />
         </div>
       )}
 
-      {/* FOOTER */}
       <div className="mt-16 text-center pb-6 text-sm text-gray-300">
         Weather AI Dashboard <br />
-        <span className="text-xs text-gray-500">
-          Built by Jonah Kimani © 2026
-        </span>
+        Built by Jonah Kimani © 2026
       </div>
-
     </div>
   );
 }
