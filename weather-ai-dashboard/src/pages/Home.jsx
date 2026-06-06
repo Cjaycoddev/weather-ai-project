@@ -23,8 +23,37 @@ export default function Home() {
       setLoading(true);
       setError("");
 
-      const data = await getAutoWeather();
-      setWeather(data);
+      // 🌍 DEVICE GPS FIRST
+      const getPosition = () =>
+        new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+
+      let lat, lon;
+
+      try {
+        const pos = await getPosition();
+        lat = pos.coords.latitude;
+        lon = pos.coords.longitude;
+      } catch (gpsError) {
+        console.warn("GPS blocked, falling back to IP location");
+        const data = await getAutoWeather();
+        setWeather(data);
+        return;
+      }
+
+      const weatherData = await getWeatherByCoords(lat, lon);
+
+      setWeather({
+        ...weatherData,
+        location: {
+          ...weatherData.location,
+          lat,
+          lon,
+          source: "gps",
+        },
+      });
+
     } catch (err) {
       console.error(err);
       setError("Failed to load weather");
@@ -86,7 +115,7 @@ export default function Home() {
     }
   };
 
-  // 🌍 FLAG FUNCTION (RESTORED)
+  // 🌍 FLAG FUNCTION
   const getFlagUrl = (country) => {
     if (!country) return "";
 
@@ -112,7 +141,7 @@ export default function Home() {
     return `https://flagcdn.com/w40/${iso}.png`;
   };
 
-  // 📍 FIXED LOCATION FORMAT
+  // 📍 LOCATION FORMAT (FIXED SAFE KEYS)
   const formatLocation = (location) => {
     if (!location) return null;
 
@@ -129,8 +158,8 @@ export default function Home() {
       country: location.country || "",
       flagUrl: getFlagUrl(location.country),
       coords: {
-        latitude: location.lat,
-        longitude: location.lon,
+        lat: location.lat || location.latitude,
+        lon: location.lon || location.longitude,
       },
     };
   };
