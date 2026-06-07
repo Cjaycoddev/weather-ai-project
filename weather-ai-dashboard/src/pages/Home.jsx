@@ -13,10 +13,9 @@ export default function Home() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [useGPS, setUseGPS] = useState(false);
 
-  // 🌀 FORCE CARD ANIMATION RESET
-  const [flipKey, setFlipKey] = useState(0);
+  // 🔥 THIS FIX RESTORES ANIMATION
+  const [animationKey, setAnimationKey] = useState(0);
 
   useEffect(() => {
     loadAutoWeather();
@@ -38,14 +37,11 @@ export default function Home() {
         const pos = await getPosition();
         lat = pos.coords.latitude;
         lon = pos.coords.longitude;
-        setUseGPS(true);
       } catch (gpsError) {
-        console.warn("GPS blocked → fallback IP");
-        setUseGPS(false);
-
+        console.warn("GPS blocked → IP fallback");
         const data = await getAutoWeather();
         setWeather(data);
-        setFlipKey((k) => k + 1);
+        setAnimationKey((k) => k + 1); // 🔥 TRIGGER FLIP
         return;
       }
 
@@ -61,7 +57,7 @@ export default function Home() {
         },
       });
 
-      setFlipKey((k) => k + 1);
+      setAnimationKey((k) => k + 1); // 🔥 TRIGGER FLIP
 
     } catch (err) {
       console.error(err);
@@ -75,7 +71,6 @@ export default function Home() {
     try {
       setLoading(true);
       setError("");
-      setUseGPS(false);
 
       const location = await getLocation(city);
 
@@ -89,7 +84,7 @@ export default function Home() {
         location,
       });
 
-      setFlipKey((k) => k + 1);
+      setAnimationKey((k) => k + 1); // 🔥 TRIGGER FLIP
 
     } catch (err) {
       console.error(err);
@@ -128,7 +123,6 @@ export default function Home() {
     }
   };
 
-  // 🌍 FLAGS (GLOBAL SUPPORT)
   const getFlagUrl = (country) => {
     if (!country) return "";
 
@@ -138,8 +132,6 @@ export default function Home() {
       kenya: "ke",
       uganda: "ug",
       tanzania: "tz",
-      rwanda: "rw",
-      burundi: "bi",
       "united states": "us",
       usa: "us",
       "united kingdom": "gb",
@@ -147,21 +139,14 @@ export default function Home() {
       france: "fr",
       canada: "ca",
       india: "in",
-      china: "cn",
-      japan: "jp",
-      brazil: "br",
-      nigeria: "ng",
-      southafrica: "za",
     };
 
     const iso = code.length === 2 ? code : map[code];
-
     if (!iso) return "";
 
     return `https://flagcdn.com/w40/${iso}.png`;
   };
 
-  // 📍 LOCATION FIX (REAL LAT/LON KEYS)
   const formatLocation = (location) => {
     if (!location) return null;
 
@@ -181,7 +166,6 @@ export default function Home() {
         lat: location.lat || location.latitude,
         lon: location.lon || location.longitude,
       },
-      source: location.source || "api",
     };
   };
 
@@ -190,7 +174,6 @@ export default function Home() {
   return (
     <div className={`min-h-screen bg-gradient-to-br ${getBackground()} text-white`}>
 
-      {/* HEADER */}
       <div className="flex flex-col items-center gap-4 pt-6">
         <SearchBar onSearch={handleSearch} />
 
@@ -202,25 +185,21 @@ export default function Home() {
         </button>
       </div>
 
-      {/* LOADING */}
       {loading && (
-        <div className="text-center mt-6 text-blue-300 animate-pulse">
+        <div className="text-center mt-6 text-blue-300">
           Loading weather...
         </div>
       )}
 
-      {/* ERROR */}
       {error && (
         <div className="text-center mt-6 text-red-400">
           {error}
         </div>
       )}
 
-      {/* LOCATION CARD */}
       {formattedLocation && (
         <div className="flex justify-center mt-6">
-
-          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur flex items-center gap-3">
+          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur flex items-center gap-2">
 
             {formattedLocation.flagUrl && (
               <img
@@ -229,43 +208,22 @@ export default function Home() {
               />
             )}
 
-            {/* 🔵 LIVE DOT ONLY FOR GPS */}
-            {useGPS && formattedLocation.source === "gps" && (
-              <div className="flex items-center gap-2">
-                <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative h-3 w-3 rounded-full bg-green-500"></span>
-                </span>
-                <span className="text-green-300 text-xs">Live location</span>
-              </div>
-            )}
-
             <span>
               📍 {formattedLocation.display}, {formattedLocation.country}
-            </span>
-
-            {/* LAT/LON ALWAYS BLACK */}
-            <span className="text-black text-xs ml-2">
-              {formattedLocation.coords.lat?.toFixed(6)},{" "}
-              {formattedLocation.coords.lon?.toFixed(6)}
             </span>
 
           </div>
         </div>
       )}
 
-      {/* WEATHER CARDS (FIXED FLIP TRIGGER) */}
+      {/* 🔥 IMPORTANT FIX: KEY HERE RESTORES ANIMATION */}
       {weather && (
-        <div
-          key={flipKey}
-          className="space-y-6 mt-6 animate-fade-in"
-        >
+        <div key={animationKey} className="space-y-6 mt-6">
           <WeatherCard current={weather.current} />
           <ForecastCard daily={weather.daily} />
         </div>
       )}
 
-      {/* FOOTER */}
       <div className="mt-16 text-center pb-6 text-sm text-gray-300">
         Weather AI Dashboard <br />
         Built by Jonah Kimani © 2026
