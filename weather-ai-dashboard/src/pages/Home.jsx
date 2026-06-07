@@ -13,16 +13,15 @@ export default function Home() {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [useGPS, setUseGPS] = useState(false);
 
-  // 🌍 TRACK LOCATION SOURCE (NEW)
-  const [locationSource, setLocationSource] = useState("ip"); 
-  // "gps" | "search" | "ip"
+  // 🌀 FORCE CARD ANIMATION RESET
+  const [flipKey, setFlipKey] = useState(0);
 
   useEffect(() => {
     loadAutoWeather();
   }, []);
 
-  // 📍 AUTO LOCATION (GPS FIRST, THEN IP)
   const loadAutoWeather = async () => {
     try {
       setLoading(true);
@@ -33,33 +32,36 @@ export default function Home() {
           navigator.geolocation.getCurrentPosition(resolve, reject);
         });
 
+      let lat, lon;
+
       try {
         const pos = await getPosition();
-
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-
-        const weatherData = await getWeatherByCoords(lat, lon);
-
-        setWeather({
-          ...weatherData,
-          location: {
-            ...weatherData.location,
-            lat,
-            lon,
-          },
-        });
-
-        setLocationSource("gps"); // ✅ IMPORTANT
-
+        lat = pos.coords.latitude;
+        lon = pos.coords.longitude;
+        setUseGPS(true);
       } catch (gpsError) {
-        console.warn("GPS blocked, using IP fallback");
+        console.warn("GPS blocked → fallback IP");
+        setUseGPS(false);
 
         const data = await getAutoWeather();
         setWeather(data);
-
-        setLocationSource("ip");
+        setFlipKey((k) => k + 1);
+        return;
       }
+
+      const weatherData = await getWeatherByCoords(lat, lon);
+
+      setWeather({
+        ...weatherData,
+        location: {
+          ...weatherData.location,
+          lat,
+          lon,
+          source: "gps",
+        },
+      });
+
+      setFlipKey((k) => k + 1);
 
     } catch (err) {
       console.error(err);
@@ -69,11 +71,11 @@ export default function Home() {
     }
   };
 
-  // 🔎 SEARCH CITY
   const handleSearch = async (city) => {
     try {
       setLoading(true);
       setError("");
+      setUseGPS(false);
 
       const location = await getLocation(city);
 
@@ -87,7 +89,7 @@ export default function Home() {
         location,
       });
 
-      setLocationSource("search"); // ✅ HIDE GREEN DOT
+      setFlipKey((k) => k + 1);
 
     } catch (err) {
       console.error(err);
@@ -97,7 +99,6 @@ export default function Home() {
     }
   };
 
-  // 🎨 BACKGROUND
   const getBackground = () => {
     const code = String(weather?.current?.condition_code ?? "");
 
@@ -127,24 +128,60 @@ export default function Home() {
     }
   };
 
-  // 📍 FORMAT LOCATION (FIXED COORDS)
+  // 🌍 FLAGS (GLOBAL SUPPORT)
+  const getFlagUrl = (country) => {
+    if (!country) return "";
+
+    const code = String(country).toLowerCase();
+
+    const map = {
+      kenya: "ke",
+      uganda: "ug",
+      tanzania: "tz",
+      rwanda: "rw",
+      burundi: "bi",
+      "united states": "us",
+      usa: "us",
+      "united kingdom": "gb",
+      germany: "de",
+      france: "fr",
+      canada: "ca",
+      india: "in",
+      china: "cn",
+      japan: "jp",
+      brazil: "br",
+      nigeria: "ng",
+      southafrica: "za",
+    };
+
+    const iso = code.length === 2 ? code : map[code];
+
+    if (!iso) return "";
+
+    return `https://flagcdn.com/w40/${iso}.png`;
+  };
+
+  // 📍 LOCATION FIX (REAL LAT/LON KEYS)
   const formatLocation = (location) => {
     if (!location) return null;
 
+    const city =
+      location.city ||
+      location.name ||
+      location.town ||
+      location.village ||
+      location.timezone?.split("/")?.pop()?.replaceAll("_", " ") ||
+      "";
+
     return {
-      display:
-        location.city ||
-        location.name ||
-        location.town ||
-        location.village ||
-        "Unknown",
-
+      display: city,
       country: location.country || "",
-
+      flagUrl: getFlagUrl(location.country),
       coords: {
-        lat: location.lat,
-        lon: location.lon,
+        lat: location.lat || location.latitude,
+        lon: location.lon || location.longitude,
       },
+      source: location.source || "api",
     };
   };
 
@@ -167,7 +204,7 @@ export default function Home() {
 
       {/* LOADING */}
       {loading && (
-        <div className="text-center mt-6 text-blue-300">
+        <div className="text-center mt-6 text-blue-300 animate-pulse">
           Loading weather...
         </div>
       )}
@@ -183,50 +220,48 @@ export default function Home() {
       {formattedLocation && (
         <div className="flex justify-center mt-6">
 
-          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur flex flex-col items-center gap-1">
+          <div className="px-5 py-3 bg-white/10 rounded-full backdrop-blur flex items-center gap-3">
 
-            {/* TOP ROW */}
-            <div className="flex items-center gap-2">
+            {formattedLocation.flagUrl && (
+              <img
+                src={formattedLocation.flagUrl}
+                className="w-6 h-4 rounded-sm shadow"
+              />
+            )}
 
-              {/* 🟢 LIVE DOT ONLY WHEN GPS */}
-              {locationSource === "gps" && (
+            {/* 🔵 LIVE DOT ONLY FOR GPS */}
+            {useGPS && formattedLocation.source === "gps" && (
+              <div className="flex items-center gap-2">
                 <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                  <span className="animate-ping absolute h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                  <span className="relative h-3 w-3 rounded-full bg-green-500"></span>
                 </span>
-              )}
+                <span className="text-green-300 text-xs">Live location</span>
+              </div>
+            )}
 
-              <span className="text-sm">
-                📍 {formattedLocation.display}, {formattedLocation.country}
-              </span>
+            <span>
+              📍 {formattedLocation.display}, {formattedLocation.country}
+            </span>
 
-            </div>
-
-            {/* 🌍 FULL COORDINATES (BLACK TEXT STYLE FIXED) */}
-            <span className="text-xs text-black font-semibold">
-              Latitude: {formattedLocation.coords.lat?.toFixed(6)} |
-              Longitude: {formattedLocation.coords.lon?.toFixed(6)}
+            {/* LAT/LON ALWAYS BLACK */}
+            <span className="text-black text-xs ml-2">
+              {formattedLocation.coords.lat?.toFixed(6)},{" "}
+              {formattedLocation.coords.lon?.toFixed(6)}
             </span>
 
           </div>
         </div>
       )}
 
-      {/* WEATHER */}
+      {/* WEATHER CARDS (FIXED FLIP TRIGGER) */}
       {weather && (
-        <div className="space-y-6 mt-6">
-
-          {/* 🔥 IMPORTANT: KEY FIX FOR CARD FLIP */}
-          <WeatherCard
-            key={weather?.current?.time + formattedLocation?.coords?.lat}
-            current={weather.current}
-          />
-
-          <ForecastCard
-            key={weather?.current?.time + formattedLocation?.coords?.lon}
-            daily={weather.daily}
-          />
-
+        <div
+          key={flipKey}
+          className="space-y-6 mt-6 animate-fade-in"
+        >
+          <WeatherCard current={weather.current} />
+          <ForecastCard daily={weather.daily} />
         </div>
       )}
 
