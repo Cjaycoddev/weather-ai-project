@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_KEY = import.meta.env.VITE_WEATHER_AI_KEY;
+const API_KEY = import.meta.env.WEATHER_AI_KEY;
 
 /**
  * This replaces direct calls to weather-ai API
