@@ -50,6 +50,8 @@ export default function Home() {
       }
 
       const weatherData = await getWeatherByCoords(lat, lon);
+      
+      console.log("Weather Data:", weatherData);
 
       setWeather({
         ...weatherData,
@@ -186,7 +188,7 @@ export default function Home() {
   };
 
   const formattedLocation = formatLocation(weather?.location);
-  console.log("Weather Data:", weatherData);
+  
   return (
     <div className={`min-h-screen bg-gradient-to-br ${getBackground()} text-white`}>
 
