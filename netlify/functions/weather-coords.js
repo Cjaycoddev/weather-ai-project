@@ -13,7 +13,7 @@ export const handler = async (event) => {
           ai: false,
         },
         headers: {
-          Authorization: `Bearer ${process.env.WEATHER_AI_KEY}`,
+          Authorization: `Bearer ${process.env.WEATHER_API_KEY}`,
         },
       }
     );
